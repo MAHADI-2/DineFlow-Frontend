@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { BACKEND_URL } from './config';
 
 const API = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || `http://${window.location.hostname}:4000`}/api/v1`,
+  baseURL: `${BACKEND_URL}/api/v1`,
   withCredentials: true,
 });
 
