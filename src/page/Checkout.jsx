@@ -102,6 +102,7 @@ const Checkout = () => {
       const items = cart.map((item) => ({
         menuItem: (item._id || item.id || item.menuId || item.menuItem)?.toString(),
         quantity: Number(item.quantity),
+        price: Number(item.price),
       }));
 
       const payload = {
@@ -124,7 +125,7 @@ const Checkout = () => {
         } else {
           // Online payment - SSLCommerz gateway
           clearCart();
-          window.location.href = res.data.url;
+          window.location.replace(res.data.url || res.data.GatewayPageURL);
         }
       } else {
         setError(res.data.message || "Failed to place order");
