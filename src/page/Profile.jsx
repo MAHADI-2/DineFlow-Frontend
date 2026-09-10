@@ -7,8 +7,7 @@ import { BACKEND_URL } from "../config";
 const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http://") || path.startsWith("https://")) return path;
-    const baseUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
-    return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+    return `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
 };
 
 const Profile = () => {
