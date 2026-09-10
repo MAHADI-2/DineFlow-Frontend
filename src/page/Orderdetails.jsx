@@ -87,6 +87,12 @@ const Orderdetails = () => {
     }
 
     const isDelivered = order.status === "delivered";
+    const customerPhone = order.deliveryDetails?.phone ||
+        order.deliveryAddress?.phone ||
+        order.phone ||
+        order.phoneNumber ||
+        order.user?.phone ||
+        "N/A";
 
     return (
         <div className="min-h-[90vh] bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -172,7 +178,7 @@ const Orderdetails = () => {
                             <p className="text-gray-400 font-medium">Delivery Address:</p>
                             <p className="font-semibold text-gray-800 mt-0.5">{order.deliveryAddress?.street || "N/A"}</p>
                             <p className="text-gray-600">{order.deliveryAddress?.city} {order.deliveryAddress?.postalCode}</p>
-                            <p className="text-gray-800 font-semibold mt-1">Phone: {order.deliveryAddress?.phone || "N/A"}</p>
+                            <p className="text-gray-800 font-semibold mt-1">Phone: {customerPhone}</p>
                         </div>
 
                         <div className="sm:text-right space-y-1">
