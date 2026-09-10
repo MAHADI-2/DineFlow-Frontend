@@ -136,11 +136,14 @@ const AdminMenu = () => {
         image: typeof formData.image === "string" ? formData.image : "",
       };
       if (editingItem) {
-        // Update
-        const res = await API.put(`/updateMenu/${editingItem._id}`, menuData);
+        const menuId = editingItem._id || editingItem.id;
+        if (!menuId) {
+          throw new Error("Food item ID is missing");
+        }
+        const res = await API.put(`/updateMenu/${menuId}`, menuData);
         if (res.data.status === "success") {
           setMenus((prev) =>
-            prev.map((m) => (m._id === editingItem._id ? res.data.data : m))
+            prev.map((m) => ((m._id || m.id) === menuId ? res.data.data : m))
           );
           setIsModalOpen(false);
         } else {

@@ -80,7 +80,9 @@ const Checkout = () => {
     try {
       const menuResponse = await API.get("/getMenu");
       const availableMenus = menuResponse.data.menus || menuResponse.data.data || [];
-      const availableIds = new Set(availableMenus.map((menu) => menu._id?.toString()));
+      const availableIds = new Set(availableMenus.map((menu) => (
+        menu._id || menu.id
+      )?.toString()));
       const validCart = cart.filter((item) => {
         const itemId = item._id || item.id || item.menuId || item.menuItem;
         return itemId && availableIds.has(itemId.toString());
@@ -131,7 +133,9 @@ const Checkout = () => {
       if (err?.response?.data?.message === "One or more menu items are no longer available") {
         try {
           const menuResponse = await API.get("/getMenu");
-          const availableIds = new Set((menuResponse.data.menus || []).map((menu) => menu._id?.toString()));
+          const availableIds = new Set((menuResponse.data.menus || menuResponse.data.data || []).map((menu) => (
+            menu._id || menu.id
+          )?.toString()));
           const freshCart = cart.filter((item) => availableIds.has((item._id || item.id || item.menuId || item.menuItem)?.toString()));
           setCart(freshCart);
           localStorage.setItem("cart", JSON.stringify(freshCart));
