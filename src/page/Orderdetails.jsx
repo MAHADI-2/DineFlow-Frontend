@@ -92,6 +92,8 @@ const Orderdetails = () => {
         order.phone ||
         order.phoneNumber ||
         order.user?.phone ||
+        order.userId?.phone ||
+        order.userId?.addresses?.[0]?.phone ||
         "N/A";
 
     return (
