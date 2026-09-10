@@ -130,7 +130,11 @@ const AdminMenu = () => {
 
     try {
       setSubmitting(true);
-      const menuData = { ...formData, description };
+      const menuData = {
+        ...formData,
+        description,
+        image: typeof formData.image === "string" ? formData.image : "",
+      };
       if (editingItem) {
         // Update
         const res = await API.put(`/updateMenu/${editingItem._id}`, menuData);
@@ -139,6 +143,8 @@ const AdminMenu = () => {
             prev.map((m) => (m._id === editingItem._id ? res.data.data : m))
           );
           setIsModalOpen(false);
+        } else {
+          throw new Error(res.data.message || "Food update failed");
         }
       } else {
         // Create
@@ -146,6 +152,8 @@ const AdminMenu = () => {
         if (res.data.status === "success") {
           setMenus((prev) => [res.data.data, ...prev]);
           setIsModalOpen(false);
+        } else {
+          throw new Error(res.data.message || "Food creation failed");
         }
       }
     } catch (err) {
