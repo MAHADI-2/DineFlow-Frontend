@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../Api";
 import { useAuth } from "../context/useAuth";
+import toast from "react-hot-toast";
 import { ArrowLeft, Printer, Star, CheckCircle, ChefHat, Truck, Gift, XCircle } from "lucide-react";
 
 const orderSteps = [
@@ -19,10 +20,12 @@ const Orderdetails = () => {
     const [order, setOrder] = useState(null);
     const [loadingOrder, setLoadingOrder] = useState(true);
 
-    // প্রতিটি খাবারের রেটিং স্টেট
-    const [itemRatings, setItemRatings] = useState({});
-    const [submittedItems, setSubmittedItems] = useState({});
-    const [submittingId, setSubmittingId] = useState(null);
+    const [reviewItem, setReviewItem] = useState(null);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [serviceExperience, setServiceExperience] = useState([]);
+    const [reviewComment, setReviewComment] = useState("");
+    const [submittingReview, setSubmittingReview] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -56,18 +59,55 @@ const Orderdetails = () => {
         }
     };
 
-    // আসল ব্যাকএন্ডে রেটিং পাঠানো
-    const handleRateItem = async (menuItemId, stars) => {
+    const openReviewModal = (item) => {
+        setReviewItem(item);
+        setReviewRating(5);
+        setHoverRating(0);
+        setServiceExperience([]);
+        setReviewComment("");
+    };
+
+    const closeReviewModal = () => {
+        if (!submittingReview) setReviewItem(null);
+    };
+
+    const toggleExperience = (experience) => {
+        setServiceExperience((current) => current.includes(experience)
+            ? current.filter((item) => item !== experience)
+            : [...current, experience]
+        );
+    };
+
+    const handleReviewSubmit = async (event) => {
+        event.preventDefault();
+        const menuItemId = reviewItem?.menuItemId || reviewItem?.id || reviewItem?._id;
+        if (!menuItemId || !reviewItem) return;
+
         try {
-            setSubmittingId(menuItemId);
-            const res = await API.post(`/menu/${menuItemId}/review`, { rating: stars });
+            setSubmittingReview(true);
+            const res = await API.post("/reviews/create", {
+                orderId: order.orderId,
+                menuItemId,
+                rating: reviewRating,
+                serviceExperience,
+                comment: reviewComment
+            });
             if (res.data.status === "success") {
-                setSubmittedItems((prev) => ({ ...prev, [menuItemId]: true }));
+                setOrder((currentOrder) => ({
+                    ...currentOrder,
+                    items: currentOrder.items.map((item) => (
+                        String(item.menuItemId || item.id || item._id) === String(menuItemId)
+                            ? { ...item, isReviewed: true }
+                            : item
+                    ))
+                }));
+                setReviewItem(null);
+                toast.success("🎉 Thank you for your feedback! It helps us serve you better.");
             }
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to submit rating");
+            toast.error(err.response?.data?.message || "Unable to submit your review. Please try again.");
         } finally {
-            setSubmittingId(null);
+            setSubmittingReview(false);
         }
     };
 
@@ -227,8 +267,7 @@ const Orderdetails = () => {
                         <div className="space-y-4">
                             {order.items?.map((item) => {
                                 const itemId = item.menuItemId || item.id || item._id;
-                                const userRating = itemRatings[itemId] || 5;
-                                const isSubmitted = submittedItems[itemId];
+                                const isSubmitted = item.isReviewed;
 
                                 return (
                                     <div key={itemId || `${item.itemName}-${item.price}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-50/60 rounded-xl">
@@ -251,24 +290,13 @@ const Orderdetails = () => {
                                                         <CheckCircle className="w-3.5 h-3.5" /> Rated!
                                                     </span>
                                                 ) : (
-                                                    <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-xs">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <Star
-                                                                key={star}
-                                                                onClick={() => setItemRatings({ ...itemRatings, [itemId]: star })}
-                                                                className={`w-4 h-4 cursor-pointer transition ${
-                                                                    userRating >= star ? "fill-amber-400 text-amber-400" : "text-gray-300"
-                                                                }`}
-                                                            />
-                                                        ))}
-                                                        <button
-                                                            onClick={() => handleRateItem(itemId, userRating)}
-                                                            disabled={submittingId === itemId}
-                                                            className="ml-2 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold px-2 py-0.5 rounded transition"
-                                                        >
-                                                            {submittingId === itemId ? "..." : "Rate"}
-                                                        </button>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openReviewModal(item)}
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700"
+                                                    >
+                                                        <Star className="h-3.5 w-3.5" /> Rate
+                                                    </button>
                                                 )}
                                             </div>
                                         )}
@@ -292,6 +320,76 @@ const Orderdetails = () => {
                 </div>
 
             </div>
+
+            {reviewItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 px-4 py-6 print:hidden" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+                    <form onSubmit={handleReviewSubmit} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-amber-600">Your feedback matters</p>
+                                <h2 id="review-modal-title" className="mt-1 text-2xl font-black text-gray-900">Rate Food &amp; Service</h2>
+                                <p className="mt-1 text-sm text-gray-500">How was <span className="font-semibold text-gray-700">{reviewItem.itemName}</span>?</p>
+                            </div>
+                            <button type="button" onClick={closeReviewModal} className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700" aria-label="Close review modal">
+                                <XCircle className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="mt-6 text-center">
+                            <p className="text-sm font-semibold text-gray-700">Overall rating</p>
+                            <div className="mt-2 flex justify-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        onMouseEnter={() => setHoverRating(star)}
+                                        onFocus={() => setHoverRating(star)}
+                                        onClick={() => setReviewRating(star)}
+                                        className="rounded-full p-1 transition hover:scale-110"
+                                        aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                                    >
+                                        <Star className={`h-8 w-8 ${star <= (hoverRating || reviewRating) ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="mt-5">
+                            <p className="text-sm font-semibold text-gray-700">What stood out?</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {["Fast Delivery", "Piping Hot", "Polite Rider", "Great Packaging"].map((experience) => (
+                                    <button
+                                        key={experience}
+                                        type="button"
+                                        onClick={() => toggleExperience(experience)}
+                                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${serviceExperience.includes(experience) ? "border-amber-500 bg-amber-100 text-amber-800" : "border-gray-200 bg-white text-gray-600 hover:border-amber-300"}`}
+                                    >
+                                        {experience === "Fast Delivery" ? "⚡" : experience === "Piping Hot" ? "🍲" : experience === "Polite Rider" ? "😊" : "👌"} {experience}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <label className="mt-5 block text-sm font-semibold text-gray-700" htmlFor="review-comment">Review comment</label>
+                        <textarea
+                            id="review-comment"
+                            value={reviewComment}
+                            onChange={(event) => setReviewComment(event.target.value)}
+                            maxLength={1000}
+                            rows={4}
+                            placeholder="How was the taste and service? Share your honest feedback with our chef..."
+                            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-100"
+                        />
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button type="button" onClick={closeReviewModal} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50" disabled={submittingReview}>Cancel</button>
+                            <button type="submit" className="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60" disabled={submittingReview}>
+                                {submittingReview ? "Submitting..." : "Submit Review"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </div>
     );
 };

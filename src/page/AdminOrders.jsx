@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../Api";
-import { CalendarCheck, CircleDollarSign, ClipboardList, Clock3, Truck, Users } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, ClipboardList, Clock3, Star, Truck, Users } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 
 const AdminOrders = () => {
@@ -11,6 +11,7 @@ const AdminOrders = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [updatingId, setUpdatingId] = useState(null);
     const [bookings, setBookings] = useState([]);
+    const [reviews, setReviews] = useState([]);
 
     const { user, loading } = useAuth();
     const navigate = useNavigate();
@@ -72,6 +73,23 @@ const AdminOrders = () => {
         if (user && user.role === "admin") {
             const bookingTimer = window.setTimeout(fetchBookings, 0);
             return () => window.clearTimeout(bookingTimer);
+        }
+        return undefined;
+    }, [user]);
+
+    const fetchReviews = async () => {
+        try {
+            const res = await API.get("/reviews/admin");
+            if (res.data.status === "success") setReviews(res.data.data || []);
+        } catch (error) {
+            console.error("Error fetching customer reviews:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            const reviewTimer = window.setTimeout(fetchReviews, 0);
+            return () => window.clearTimeout(reviewTimer);
         }
         return undefined;
     }, [user]);
@@ -253,6 +271,33 @@ const AdminOrders = () => {
                         </div>
                     </section>
                 </div>
+
+                <section className="mb-6 rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider text-amber-600">Customer voice</p>
+                            <h2 className="mt-1 text-xl font-black text-gray-900">Recent food &amp; service reviews</h2>
+                        </div>
+                        <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">{reviews.length} shown</span>
+                    </div>
+                    {reviews.length === 0 ? (
+                        <p className="mt-4 rounded-xl bg-gray-50 px-4 py-5 text-center text-sm text-gray-400">No customer reviews yet.</p>
+                    ) : (
+                        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                            {reviews.slice(0, 6).map((review) => (
+                                <div key={review._id} className="rounded-xl border border-gray-100 bg-gray-50/70 p-3">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <p className="truncate text-sm font-bold text-gray-800">{review.menuItem?.name || "Menu item"}</p>
+                                        <span className="flex shrink-0 items-center gap-0.5 text-xs font-bold text-amber-600"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {review.rating}/5</span>
+                                    </div>
+                                    <p className="mt-1 text-xs text-gray-500">{review.customerName} · {new Date(review.createdAt).toLocaleDateString()}</p>
+                                    {review.comment && <p className="mt-2 text-sm text-gray-700">“{review.comment}”</p>}
+                                    {review.serviceExperience?.length > 0 && <p className="mt-2 text-[11px] font-semibold text-amber-700">{review.serviceExperience.join(" · ")}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
 
                 {/* ফিল্টার এবং সার্চ বার */}
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center mb-6">

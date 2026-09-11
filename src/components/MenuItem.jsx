@@ -261,6 +261,13 @@ const MenuItem = () => {
                       {menu.description || "Prepared fresh with herbs and rich secret sauces."}
                     </p>
 
+                    {menu.reviews?.length > 0 && (
+                      <p className="mb-2 line-clamp-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] italic text-amber-800">
+                        “{menu.reviews[menu.reviews.length - 1].comment || "Loved this dish!"}”
+                        <span className="mt-1 block not-italic font-semibold text-amber-600">{menu.reviews[menu.reviews.length - 1].userName || "Customer"}</span>
+                      </p>
+                    )}
+
                     {/* প্রেপারেশন টাইম ও ফ্রেশ ইনফো */}
                     <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-gray-50">
                       <span>⏱️ {menu.preparationTime || 20} mins prep</span>
