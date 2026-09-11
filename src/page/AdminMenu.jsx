@@ -6,6 +6,13 @@ import { useAuth } from "../context/useAuth";
 import { Plus, Edit2, Trash2, X, Image as ImageIcon } from "lucide-react";
 import { CATEGORY_OPTIONS, getMenuCategory, getStoredCategory } from "../utils/menuCategory";
 
+// ক্যাটাগরিকে নিরাপদভাবে প্রথম অক্ষর বড় হাতের (Capitalized) করার ফাংশন
+const formatCategoryForDB = (cat) => {
+  if (!cat) return "Main";
+  const stored = getStoredCategory(cat);
+  return stored.charAt(0).toUpperCase() + stored.slice(1).toLowerCase();
+};
+
 const AdminMenu = () => {
   const [menus, setMenus] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
@@ -21,7 +28,7 @@ const AdminMenu = () => {
     name: "",
     description: "",
     price: "",
-    category: "main",
+    category: "Main",
     image: "",
     preparationTime: 20,
     isAvailable: true,
@@ -72,7 +79,7 @@ const AdminMenu = () => {
       name: "",
       description: "",
       price: "",
-      category: "main",
+      category: "Main",
       image: "",
       preparationTime: 20,
       isAvailable: true,
@@ -87,7 +94,7 @@ const AdminMenu = () => {
       name: item.name,
       description: item.description || "",
       price: item.price,
-      category: getStoredCategory(item.category),
+      category: formatCategoryForDB(item.category),
       image: item.image || "",
       preparationTime: item.preparationTime || 20,
       isAvailable: item.isAvailable !== false,
@@ -95,7 +102,7 @@ const AdminMenu = () => {
     setIsModalOpen(true);
   };
 
-  // ছবি সিলেক্ট করার সাথে সাথে সার্ভারে আপলোড হয়ে যাবে, base64 আর ফর্মে যাবে না
+  // ছবি আপলোড
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -131,12 +138,17 @@ const AdminMenu = () => {
 
     try {
       setSubmitting(true);
+      
+      // ✅ ১০০% নিশ্চিত করা যে category সর্বদা 'Dessert', 'Main', 'Beverage' ইত্যাদি প্রথম অক্ষর বড় হাতের হয়েই সার্ভারে যাবে
+      const safeCategory = formatCategoryForDB(formData.category);
+
       const menuData = {
         ...formData,
-        category: getStoredCategory(formData.category),
+        category: safeCategory,
         description,
         image: typeof formData.image === "string" ? formData.image : "",
       };
+
       if (editingItem) {
         const menuId = editingItem._id || editingItem.id;
         if (!menuId) {
