@@ -38,7 +38,7 @@ const Register = () => {
             navigate("/verify-otp", {
                 state: {
                     email,
-                    fallbackOtp: data.data?.emailDelivery === "fallback" ? data.data.otp : ""
+                    testOtp: data.otp || data.data?.otp || ""
                 }
             });
 

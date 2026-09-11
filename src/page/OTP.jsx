@@ -12,7 +12,7 @@ const OTP = () => {
     const navigate = useNavigate();
 
     const email = location.state?.email;
-    const fallbackOtp = location.state?.fallbackOtp;
+    const testOtp = location.state?.testOtp || location.state?.fallbackOtp;
 
     const handleSubmit = async (e) => {
 
@@ -53,8 +53,8 @@ const OTP = () => {
                         <span className="font-semibold text-indigo-600">{email || "your email"}</span>
                     </p>
                     <p className="mt-4 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-left text-xs leading-5 text-amber-800">
-                        {fallbackOtp
-                            ? `Verification code sent to your email! (If email delivery is delayed on free server, use code: ${fallbackOtp} for testing)`
+                        {testOtp
+                            ? `Verification code sent to your email! (If email delivery is delayed on free server, use code: ${testOtp} for testing)`
                             : "Verification code sent to your email!"}
                     </p>
                 </div>
@@ -73,6 +73,17 @@ const OTP = () => {
                             }
                             className="w-full px-4 py-3 text-center text-xl tracking-widest text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
                         />
+                        <div className="mt-4 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                            <span>✉️ If email delivery is delayed on temporary inboxes, use code: <strong>{testOtp || "Check DB / Console"}</strong></span>
+                            <button
+                                type="button"
+                                onClick={() => setOtp(String(testOtp))}
+                                disabled={!testOtp}
+                                className="ml-2 shrink-0 rounded-lg bg-amber-600 px-2.5 py-1 font-medium text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Auto-Fill
+                            </button>
+                        </div>
                     </div>
 
                     <button 
