@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import API from "../Api";
 import { CalendarCheck, CircleDollarSign, ClipboardList, Clock3, Truck, Users } from "lucide-react";
 import { useAuth } from "../context/useAuth";
-import { BOOKINGS_KEY, getStoredBookings } from "./BookTable";
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -11,7 +10,7 @@ const AdminOrders = () => {
     const [filterStatus, setFilterStatus] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [updatingId, setUpdatingId] = useState(null);
-    const [bookings, setBookings] = useState(getStoredBookings);
+    const [bookings, setBookings] = useState([]);
 
     const { user, loading } = useAuth();
     const navigate = useNavigate();
@@ -58,6 +57,19 @@ const AdminOrders = () => {
             const fetchTimer = window.setTimeout(fetchAllOrders, 0);
             return () => window.clearTimeout(fetchTimer);
         }
+    }, [user]);
+
+    const fetchBookings = async () => {
+        try {
+            const res = await API.get("/tableBookings");
+            if (res.data.status === "success") setBookings(res.data.data || []);
+        } catch (error) {
+            console.error("Error fetching table bookings:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (user && user.role === "admin") fetchBookings();
     }, [user]);
 
     // ১. অর্ডারের স্ট্যাটাস লাইভ পরিবর্তন (Pending -> Preparing -> Delivered)
@@ -145,10 +157,15 @@ const AdminOrders = () => {
     const chartMax = Math.max(...revenueByDay.map((day) => day.revenue), 1);
     const chartPoints = revenueByDay.map((day, index) => `${(index / 6) * 100},${92 - (day.revenue / chartMax) * 72}`).join(" ");
 
-    const updateBookingStatus = (bookingId, status) => {
-        const updatedBookings = bookings.map((booking) => booking.id === bookingId ? { ...booking, status } : booking);
-        setBookings(updatedBookings);
-        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(updatedBookings));
+    const updateBookingStatus = async (bookingId, status) => {
+        try {
+            const res = await API.patch(`/tableBookings/${bookingId}`, { status });
+            if (res.data.status === "success") {
+                setBookings((current) => current.map((booking) => booking._id === bookingId ? res.data.data : booking));
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || "Unable to update table booking");
+        }
     };
 
     if (loading || loadingOrders) {
@@ -224,9 +241,9 @@ const AdminOrders = () => {
                         <div className="mt-4 flex items-center gap-3 rounded-xl bg-orange-50 p-3"><Users className="h-5 w-5 text-orange-600" /><span className="text-sm font-bold text-orange-900">{pendingBookings} awaiting confirmation</span></div>
                         <div className="mt-3 max-h-44 space-y-2 overflow-y-auto">
                             {bookings.length === 0 ? <p className="py-6 text-center text-sm text-gray-400">No table requests yet.</p> : bookings.slice(0, 5).map((booking) => (
-                                <div key={booking.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5">
+                                <div key={booking._id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5">
                                     <div className="min-w-0"><p className="truncate text-sm font-bold text-gray-800">{booking.name} <span className="font-normal text-gray-400">({booking.guests})</span></p><p className="flex items-center gap-1 text-xs text-gray-400"><Clock3 className="h-3 w-3" /> {booking.date} at {booking.time}</p></div>
-                                    <select value={booking.status} onChange={(event) => updateBookingStatus(booking.id, event.target.value)} className="rounded-lg border border-gray-200 px-2 py-1 text-[11px] font-bold uppercase text-gray-600"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="seated">Seated</option><option value="cancelled">Cancelled</option></select>
+                                    <select value={booking.status} onChange={(event) => updateBookingStatus(booking._id, event.target.value)} className="rounded-lg border border-gray-200 px-2 py-1 text-[11px] font-bold uppercase text-gray-600"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="seated">Seated</option><option value="cancelled">Cancelled</option></select>
                                 </div>
                             ))}
                         </div>

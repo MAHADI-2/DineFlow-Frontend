@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { CalendarDays, CheckCircle2, Clock3, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import API from "../Api";
 
 const BOOKINGS_KEY = "dineflowTableBookings";
 
@@ -14,6 +16,7 @@ const getStoredBookings = () => {
 
 const BookTable = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         name: user?.name || "",
         phone: user?.phone || "",
@@ -23,22 +26,29 @@ const BookTable = () => {
         occasion: "",
     });
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
     const updateField = (event) => {
         setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        const booking = {
-            ...form,
-            guests: Number(form.guests),
-            id: `TB-${Date.now().toString().slice(-6)}`,
-            status: "pending",
-            createdAt: new Date().toISOString(),
-        };
-        localStorage.setItem(BOOKINGS_KEY, JSON.stringify([booking, ...getStoredBookings()]));
-        setSubmitted(true);
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+        setSubmitting(true);
+        setError("");
+        try {
+            await API.post("/tableBookings", { ...form, guests: Number(form.guests) });
+            setSubmitted(true);
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to request a table right now. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -74,7 +84,8 @@ const BookTable = () => {
                                 <label className="text-sm font-semibold text-gray-700">Guests<select name="guests" value={form.guests} onChange={updateField} className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 font-normal outline-none focus:border-orange-500">{[1, 2, 3, 4, 5, 6, 7, 8].map((count) => <option key={count} value={count}>{count} {count === 1 ? "guest" : "guests"}</option>)}</select></label>
                                 <label className="text-sm font-semibold text-gray-700">Occasion <span className="font-normal text-gray-400">(optional)</span><input name="occasion" value={form.occasion} onChange={updateField} placeholder="Birthday, dinner..." className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 font-normal outline-none focus:border-orange-500" /></label>
                             </div>
-                            <button type="submit" className="w-full rounded-xl bg-orange-500 py-3.5 font-bold text-white transition hover:bg-orange-600">Request reservation</button>
+                            {error && <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</p>}
+                            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-orange-500 py-3.5 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300">{submitting ? "Sending request..." : "Request reservation"}</button>
                         </form>
                     )}
                 </section>
