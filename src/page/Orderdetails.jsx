@@ -89,6 +89,7 @@ const Orderdetails = () => {
 
     const handleReviewSubmit = async (event) => {
         event.preventDefault();
+        if (submittingReview) return;
         const foodId = getFoodId(reviewItem);
         if (!foodId || !reviewItem) {
             toast.error("This food item could not be identified. Please refresh the order and try again.");
@@ -110,7 +111,15 @@ const Orderdetails = () => {
                     ...currentOrder,
                     items: currentOrder.items.map((item) => (
                         String(getFoodId(item)) === String(foodId)
-                            ? { ...item, isReviewed: true }
+                            ? {
+                                ...item,
+                                isReviewed: true,
+                                review: {
+                                    rating: reviewRating,
+                                    comment: reviewComment.trim(),
+                                    tags: serviceExperience
+                                }
+                            }
                             : item
                     ))
                 }));
@@ -293,6 +302,11 @@ const Orderdetails = () => {
                                             <p className="text-xs font-bold text-gray-700 mt-0.5">
                                                 ৳{item.subtotal || item.price * item.quantity}
                                             </p>
+                                            {item.review?.comment && (
+                                                <p className="mt-2 max-w-md rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs italic text-emerald-800">
+                                                    “{item.review.comment}” · {item.review.rating}/5
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* ⭐ ডেলিভারি হওয়ার পর প্রতিটি খাবারের জন্য লাইভ রেটিং দেওয়ার বাটন */}

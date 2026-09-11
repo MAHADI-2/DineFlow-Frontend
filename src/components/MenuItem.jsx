@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import API from "../Api";
 import { BACKEND_URL } from "../config";
 import { useCart } from "../context/useCart";
+import toast from "react-hot-toast";
 import { Search, Sparkles, History, X, Star } from "lucide-react";
 import { getMenuCategory } from "../utils/menuCategory";
 
@@ -26,6 +27,11 @@ const MenuItem = () => {
   });
 
   const { addToCart } = useCart();
+
+  const handleAddToCart = (menu) => {
+    addToCart(menu);
+    toast.success(`${menu.name} added to cart`);
+  };
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -279,7 +285,7 @@ const MenuItem = () => {
                 {/* বাটন */}
                 <div className="p-4 pt-0">
                   <button
-                    onClick={() => addToCart(menu)}
+                    onClick={() => handleAddToCart(menu)}
                     disabled={menu.isAvailable === false}
                     className="mt-1 w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 rounded-xl active:scale-95 transition text-center shadow-xs text-sm cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed disabled:active:scale-100"
                   >

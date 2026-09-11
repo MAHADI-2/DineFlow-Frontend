@@ -5,6 +5,7 @@ import Hero from "../components/Hero";
 import API from "../Api";
 import { BACKEND_URL } from "../config";
 import { useCart } from "../context/useCart";
+import toast from "react-hot-toast";
 
 const fallbackImage = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
 
@@ -17,6 +18,11 @@ const Home = () => {
     const [featuredMenus, setFeaturedMenus] = useState([]);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
+
+    const handleAddToCart = (menu) => {
+        addToCart(menu);
+        toast.success(`${menu.name} added to cart`);
+    };
 
     useEffect(() => {
         const fetchFeaturedMenus = async () => {
@@ -93,7 +99,7 @@ const Home = () => {
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => addToCart(menu)}
+                                            onClick={() => handleAddToCart(menu)}
                                             disabled={menu.isAvailable === false}
                                             className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition"
                                         >
