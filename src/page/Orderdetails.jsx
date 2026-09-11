@@ -16,9 +16,9 @@ const getFoodId = (item) => (
     item?.menuItem?._id ||
     item?.menuItem?.id ||
     (typeof item?.menuItem === "string" ? item.menuItem : null) ||
+    item?.menuItemId ||
     item?._id ||
-    item?.id ||
-    item?.menuItemId
+    item?.id
 );
 
 const Orderdetails = () => {
