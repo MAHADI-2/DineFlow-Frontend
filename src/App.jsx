@@ -22,6 +22,7 @@ import OrderCancel from './page/OrderCancel';
 import ForgotPassword from './page/ForgotPassword';
 import ResetPassword from './page/ResetPassword';
 import NotFound from './page/NotFound';
+import BookTable from './page/BookTable';
 function App() {
   return (
      <ContextProvider>
@@ -41,6 +42,7 @@ function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/edit" element={<EditProfile />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/book-table" element={<BookTable />} />
       <Route path="/orders" element={<Order />} />
       <Route path="/orderdetails/:orderId" element={<Orderdetails />} />
       <Route path="/order/success/:orderId" element={<OrderSuccess />} />

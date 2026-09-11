@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, User, ShieldCheck, UtensilsCrossed } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, ShieldCheck, UtensilsCrossed, CalendarDays } from 'lucide-react';
 import { useAuth } from '../../../context/useAuth';
 import { useCart } from '../../../context/useCart';
 
@@ -34,6 +34,10 @@ export default function Navbar() {
             </Link>
             <Link to="/menu" className="text-gray-700 hover:text-amber-600 font-medium transition">
               Menu
+            </Link>
+            <Link to="/book-table" className="flex items-center gap-1.5 text-gray-700 hover:text-amber-600 font-medium transition">
+              <CalendarDays className="w-4 h-4 text-orange-500" />
+              <span>Book Table</span>
             </Link>
             
             {/* সাধারণ ইউজারদের জন্য My Orders */}
@@ -141,6 +145,14 @@ export default function Navbar() {
             className="block text-gray-700 hover:text-amber-600 font-medium py-2"
           >
             Menu
+          </Link>
+          <Link
+            to="/book-table"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-2 text-gray-700 hover:text-amber-600 font-medium py-2"
+          >
+            <CalendarDays className="w-4 h-4 text-orange-500" />
+            Book Table
           </Link>
 
           {user && (

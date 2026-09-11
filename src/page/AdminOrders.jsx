@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../Api";
-import { CircleDollarSign, ClipboardList, Truck } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, ClipboardList, Clock3, Truck, Users } from "lucide-react";
 import { useAuth } from "../context/useAuth";
+import { BOOKINGS_KEY, getStoredBookings } from "./BookTable";
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -10,6 +11,7 @@ const AdminOrders = () => {
     const [filterStatus, setFilterStatus] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [updatingId, setUpdatingId] = useState(null);
+    const [bookings, setBookings] = useState(getStoredBookings);
 
     const { user, loading } = useAuth();
     const navigate = useNavigate();
@@ -127,6 +129,27 @@ const AdminOrders = () => {
         return isCompleted ? sum + Number(order.totalAmount || 0) : sum;
     }, 0);
     const activeDeliveries = orders.filter((order) => ["pending", "confirmed"].includes(order.status)).length;
+    const pendingBookings = bookings.filter((booking) => booking.status === "pending").length;
+    const revenueByDay = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - (6 - index));
+        const key = date.toISOString().slice(0, 10);
+        const revenue = orders.reduce((sum, order) => {
+            const orderDate = new Date(order.createdAt).toISOString().slice(0, 10);
+            const isCompleted = order.paymentStatus === "paid" || order.status === "delivered";
+            return orderDate === key && isCompleted ? sum + Number(order.totalAmount || 0) : sum;
+        }, 0);
+        return { key, label: date.toLocaleDateString([], { weekday: "short" }), revenue };
+    });
+    const chartMax = Math.max(...revenueByDay.map((day) => day.revenue), 1);
+    const chartPoints = revenueByDay.map((day, index) => `${(index / 6) * 100},${92 - (day.revenue / chartMax) * 72}`).join(" ");
+
+    const updateBookingStatus = (bookingId, status) => {
+        const updatedBookings = bookings.map((booking) => booking.id === bookingId ? { ...booking, status } : booking);
+        setBookings(updatedBookings);
+        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(updatedBookings));
+    };
 
     if (loading || loadingOrders) {
         return <div className="text-center py-20 font-semibold text-gray-500">Loading Admin Dashboard...</div>;
@@ -170,6 +193,44 @@ const AdminOrders = () => {
                         <p className="mt-2 text-2xl font-black text-blue-900">{activeDeliveries.toLocaleString()}</p>
                         <p className="mt-1 text-xs text-blue-700">Pending or confirmed</p>
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_0.9fr] mb-6">
+                    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Revenue overview</p>
+                                <h2 className="mt-1 text-xl font-black text-gray-900">Last 7 days</h2>
+                            </div>
+                            <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">৳{revenueByDay.reduce((sum, day) => sum + day.revenue, 0).toLocaleString()}</span>
+                        </div>
+                        <div className="mt-4 h-48 w-full">
+                            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-36 w-full overflow-visible" role="img" aria-label="Revenue area chart for the last seven days">
+                                <defs><linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity="0.35" /><stop offset="100%" stopColor="#10b981" stopOpacity="0.02" /></linearGradient></defs>
+                                <line x1="0" y1="92" x2="100" y2="92" stroke="#e5e7eb" strokeWidth="0.6" />
+                                <polygon points={`0,92 ${chartPoints} 100,92`} fill="url(#revenueFill)" />
+                                <polyline points={chartPoints} fill="none" stroke="#059669" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+                                {revenueByDay.map((day, index) => <circle key={day.key} cx={(index / 6) * 100} cy={92 - (day.revenue / chartMax) * 72} r="1.7" fill="#ffffff" stroke="#059669" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
+                            </svg>
+                            <div className="flex justify-between text-[11px] font-semibold text-gray-400">{revenueByDay.map((day) => <span key={day.key}>{day.label}</span>)}</div>
+                        </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div><p className="text-xs font-bold uppercase tracking-wider text-gray-400">Dine-in bookings</p><h2 className="mt-1 text-xl font-black text-gray-900">Table requests</h2></div>
+                            <CalendarCheck className="h-6 w-6 text-orange-500" />
+                        </div>
+                        <div className="mt-4 flex items-center gap-3 rounded-xl bg-orange-50 p-3"><Users className="h-5 w-5 text-orange-600" /><span className="text-sm font-bold text-orange-900">{pendingBookings} awaiting confirmation</span></div>
+                        <div className="mt-3 max-h-44 space-y-2 overflow-y-auto">
+                            {bookings.length === 0 ? <p className="py-6 text-center text-sm text-gray-400">No table requests yet.</p> : bookings.slice(0, 5).map((booking) => (
+                                <div key={booking.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2.5">
+                                    <div className="min-w-0"><p className="truncate text-sm font-bold text-gray-800">{booking.name} <span className="font-normal text-gray-400">({booking.guests})</span></p><p className="flex items-center gap-1 text-xs text-gray-400"><Clock3 className="h-3 w-3" /> {booking.date} at {booking.time}</p></div>
+                                    <select value={booking.status} onChange={(event) => updateBookingStatus(booking.id, event.target.value)} className="rounded-lg border border-gray-200 px-2 py-1 text-[11px] font-bold uppercase text-gray-600"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="seated">Seated</option><option value="cancelled">Cancelled</option></select>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
                 </div>
 
                 {/* ফিল্টার এবং সার্চ বার */}
