@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Bell, Menu, X, ShoppingCart, User, ShieldCheck, UtensilsCrossed, CalendarDays } from 'lucide-react';
 import { useAuth } from '../../../context/useAuth';
 import { useCart } from '../../../context/useCart';
@@ -34,6 +34,7 @@ const statusNotification = (type, item) => {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const [notifications, setNotifications] = useState([]);
@@ -45,6 +46,9 @@ export default function Navbar() {
     0
   );
   const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const isActive = (path) => location.pathname === path;
+  const navLinkClass = (path) => `whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm transition-colors ${isActive(path) ? 'bg-amber-50 text-amber-600 font-bold' : 'font-medium text-slate-600 hover:text-amber-600'}`;
+  const mobileNavLinkClass = (path) => `block rounded-lg px-3 py-2 transition-colors ${isActive(path) ? 'bg-amber-50 text-amber-600 font-bold' : 'font-medium text-slate-600 hover:bg-amber-50 hover:text-amber-600'}`;
 
   useEffect(() => {
     if (!user?._id && !user?.id) {
@@ -131,22 +135,22 @@ export default function Navbar() {
 
           {/* Desktop Menu Links */}
           <div className="hidden items-center gap-1 xl:flex">
-            <Link to="/" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
+            <Link to="/" aria-current={isActive('/') ? 'page' : undefined} className={navLinkClass('/')}>
               Home
             </Link>
-            <Link to="/menu" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
+            <Link to="/menu" aria-current={isActive('/menu') ? 'page' : undefined} className={navLinkClass('/menu')}>
               Menu
             </Link>
-            <Link to="/about" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">About</Link>
-            <Link to="/contact" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">Contact</Link>
-            <Link to="/book-table" className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
-              <CalendarDays className="w-4 h-4 text-orange-500" />
+            <Link to="/about" aria-current={isActive('/about') ? 'page' : undefined} className={navLinkClass('/about')}>About</Link>
+            <Link to="/contact" aria-current={isActive('/contact') ? 'page' : undefined} className={navLinkClass('/contact')}>Contact</Link>
+            <Link to="/book-table" aria-current={isActive('/book-table') ? 'page' : undefined} className={`flex items-center gap-1.5 ${navLinkClass('/book-table')}`}>
+              <CalendarDays className={`h-4 w-4 ${isActive('/book-table') ? 'text-amber-600' : 'text-orange-500'}`} />
               <span>Book Table</span>
             </Link>
             
             {/* সাধারণ ইউজারদের জন্য My Orders */}
             {user && (
-              <Link to="/orders" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
+              <Link to="/orders" aria-current={isActive('/orders') ? 'page' : undefined} className={navLinkClass('/orders')}>
                 My Orders
               </Link>
             )}
@@ -156,7 +160,8 @@ export default function Navbar() {
               <>
                 <Link 
                   to="/admin/orders" 
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
+                  aria-current={isActive('/admin/orders') ? 'page' : undefined}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${isActive('/admin/orders') ? 'border-amber-300 bg-amber-100 text-amber-700' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-600" />
                   <span>Admin Orders</span>
@@ -165,7 +170,8 @@ export default function Navbar() {
 
                 <Link 
                   to="/admin/menu" 
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-amber-50 hover:text-amber-600"
+                  aria-current={isActive('/admin/menu') ? 'page' : undefined}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${isActive('/admin/menu') ? 'bg-amber-50 text-amber-600' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-600'}`}
                 >
                   <UtensilsCrossed className="w-4 h-4 text-amber-600" />
                   <span>Manage Menu</span>
@@ -255,36 +261,30 @@ export default function Navbar() {
       {isOpen && (
         <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-2 shadow-lg xl:hidden">
           <div className="mx-auto max-w-7xl space-y-3">
-          <Link
-            to="/"
-            onClick={() => setIsOpen(false)}
-            className="block text-gray-700 hover:text-amber-600 font-medium py-2"
-          >
+          <Link to="/" aria-current={isActive('/') ? 'page' : undefined} onClick={() => setIsOpen(false)} className={mobileNavLinkClass('/')}>
             Home
           </Link>
-          <Link
-            to="/menu"
-            onClick={() => setIsOpen(false)}
-            className="block text-gray-700 hover:text-amber-600 font-medium py-2"
-          >
+          <Link to="/menu" aria-current={isActive('/menu') ? 'page' : undefined} onClick={() => setIsOpen(false)} className={mobileNavLinkClass('/menu')}>
             Menu
           </Link>
-          <Link to="/about" onClick={() => setIsOpen(false)} className="block py-2 font-medium text-gray-700 hover:text-amber-600">About</Link>
-          <Link to="/contact" onClick={() => setIsOpen(false)} className="block py-2 font-medium text-gray-700 hover:text-amber-600">Contact</Link>
+          <Link to="/about" aria-current={isActive('/about') ? 'page' : undefined} onClick={() => setIsOpen(false)} className={mobileNavLinkClass('/about')}>About</Link>
+          <Link to="/contact" aria-current={isActive('/contact') ? 'page' : undefined} onClick={() => setIsOpen(false)} className={mobileNavLinkClass('/contact')}>Contact</Link>
           <Link
             to="/book-table"
+            aria-current={isActive('/book-table') ? 'page' : undefined}
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2 text-gray-700 hover:text-amber-600 font-medium py-2"
+            className={`flex items-center gap-2 ${mobileNavLinkClass('/book-table')}`}
           >
-            <CalendarDays className="w-4 h-4 text-orange-500" />
+            <CalendarDays className={`h-4 w-4 ${isActive('/book-table') ? 'text-amber-600' : 'text-orange-500'}`} />
             Book Table
           </Link>
 
           {user && (
             <Link
               to="/orders"
+              aria-current={isActive('/orders') ? 'page' : undefined}
               onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-amber-600 font-medium py-2"
+              className={mobileNavLinkClass('/orders')}
             >
               My Orders
             </Link>
@@ -295,8 +295,9 @@ export default function Navbar() {
             <div className="space-y-2 pt-1">
               <Link
                 to="/admin/orders"
+                aria-current={isActive('/admin/orders') ? 'page' : undefined}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 text-amber-700 bg-amber-50 font-semibold px-3 py-2 rounded-lg border border-amber-200"
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 font-semibold transition-colors ${isActive('/admin/orders') ? 'border-amber-300 bg-amber-100 text-amber-700' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
               >
                 <ShieldCheck className="w-4 h-4 text-amber-600" />
                 <span>Admin Orders</span>
@@ -305,8 +306,9 @@ export default function Navbar() {
 
               <Link
                 to="/admin/menu"
+                aria-current={isActive('/admin/menu') ? 'page' : undefined}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 text-gray-700 hover:text-amber-600 font-medium px-3 py-2 rounded-lg"
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 font-semibold transition-colors ${isActive('/admin/menu') ? 'bg-amber-50 text-amber-600' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-600'}`}
               >
                 <UtensilsCrossed className="w-4 h-4 text-amber-600" />
                 <span>Manage Menu</span>
