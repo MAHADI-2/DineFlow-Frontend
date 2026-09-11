@@ -104,7 +104,7 @@ const Orderdetails = () => {
                 serviceExperience,
                 comment: reviewComment
             });
-            if (res.data.status === "success") {
+            if (res.data.success === true || res.data.status === "success") {
                 setOrder((currentOrder) => ({
                     ...currentOrder,
                     items: currentOrder.items.map((item) => (
