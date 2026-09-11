@@ -30,7 +30,8 @@ const Login = () => {
             loginUser(user, token);
             const displayName = user?.name || user?.username || email.split("@")[0];
             toast.success(`✨ Welcome back, ${displayName}! Login Successful.`);
-            navigate(location.state?.from || "/");
+            const destination = location.state?.from || (user?.role === "admin" ? "/admin/orders" : "/");
+            navigate(destination);
         
         }
             
@@ -108,8 +109,8 @@ const Login = () => {
                             <button type="button" onClick={() => fillCredentials("customer@dineflow.com", "123456")} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Fill</button>
                         </div>
                         <div className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
-                            <span className="min-w-0 truncate text-gray-700">👑 Admin: admin@dineflow.com <span className="text-gray-400">(Pass: admin123)</span></span>
-                            <button type="button" onClick={() => fillCredentials("admin@dineflow.com", "admin123")} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Fill</button>
+                            <span className="min-w-0 truncate text-gray-700">🛡️ Admin: admin@dineflow.com <span className="text-gray-400">(Pass: Admin123)</span></span>
+                            <button type="button" onClick={() => fillCredentials("admin@dineflow.com", "Admin123")} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Fill</button>
                         </div>
                     </div>
                 </div>
