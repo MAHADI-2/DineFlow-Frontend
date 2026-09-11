@@ -98,11 +98,13 @@ const AdminOrders = () => {
     const handleStatusChange = async (orderId, newStatus) => {
         try {
             setUpdatingId(orderId);
-            const res = await API.put(`/updateOrder/${orderId}`, { status: newStatus });
+            const res = await API.put(`/updateOrder/${encodeURIComponent(orderId)}`, { status: newStatus });
             if (res.data.status === "success") {
                 setOrders((prev) =>
                     prev.map((o) => (o.orderId === orderId ? { ...o, status: newStatus } : o))
                 );
+            } else {
+                throw new Error(res.data.message || "Failed to update order status");
             }
         } catch (err) {
             alert(err.response?.data?.message || "Failed to update order status");
