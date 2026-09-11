@@ -69,7 +69,11 @@ const AdminOrders = () => {
     };
 
     useEffect(() => {
-        if (user && user.role === "admin") fetchBookings();
+        if (user && user.role === "admin") {
+            const bookingTimer = window.setTimeout(fetchBookings, 0);
+            return () => window.clearTimeout(bookingTimer);
+        }
+        return undefined;
     }, [user]);
 
     // ১. অর্ডারের স্ট্যাটাস লাইভ পরিবর্তন (Pending -> Preparing -> Delivered)

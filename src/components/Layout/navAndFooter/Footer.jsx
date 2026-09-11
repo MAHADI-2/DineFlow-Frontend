@@ -1,5 +1,6 @@
 
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -8,7 +9,7 @@ const Footer = () => {
         
         {/* About Restaurant */}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-4">🍽️ DineFlow</h2>
+          <Link to="/" className="mb-4 flex items-center gap-3 text-2xl font-bold text-white"><img src="/dineflow-logo.svg" alt="DineFlow Logo" className="h-10 w-10 object-cover rounded-xl shadow-sm" />DineFlow</Link>
           <p className="text-sm text-gray-400 leading-relaxed mb-4">
             Amra shera swad ebong manosommot khabar apnader samne niye asi. Protiti dish toiri hoy khub jotno ebong shuddho upokoron diye.
           </p>
@@ -30,8 +31,8 @@ const Footer = () => {
           <ul className="space-y-2 text-sm">
             <li><a href="#home" className="hover:text-orange-500 transition">Home</a></li>
             <li><a href="#menu" className="hover:text-orange-500 transition">Our Menu</a></li>
-            <li><a href="#about" className="hover:text-orange-500 transition">About Us</a></li>
-            <li><a href="#contact" className="hover:text-orange-500 transition">Contact Us</a></li>
+            <li><Link to="/about" className="hover:text-orange-500 transition">About Us</Link></li>
+            <li><Link to="/contact" className="hover:text-orange-500 transition">Contact Us</Link></li>
           </ul>
         </div>
 

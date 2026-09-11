@@ -129,9 +129,11 @@ const Orderdetails = () => {
                     
                     {/* হেডার */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 mb-6 gap-4">
-                        <div>
-                            <span className="text-2xl font-black text-amber-600 tracking-tight">DineFlow</span>
+                        <div className="flex items-center gap-3">
+                            <img src="/dineflow-logo.svg" alt="DineFlow Logo" className="h-10 w-10 object-cover rounded-xl shadow-sm print:shadow-none" />
+                            <div><span className="text-2xl font-black text-amber-600 tracking-tight">DineFlow</span>
                             <p className="text-xs text-gray-400 mt-0.5">Freshly prepared & delivered with care</p>
+                            </div>
                         </div>
 
                         <div className="sm:text-right">
@@ -169,7 +171,7 @@ const Orderdetails = () => {
                                             }`}>
                                                 <Icon className="h-5 w-5" />
                                             </div>
-                                            <span className={`mt-2 max-w-[120px] text-[11px] font-bold ${isComplete ? "text-emerald-700" : "text-gray-500"}`}>
+                                                <span className={`mt-2 max-w-30 text-[11px] font-bold ${isComplete ? "text-emerald-700" : "text-gray-500"}`}>
                                                 {step.label}
                                             </span>
                                         </div>

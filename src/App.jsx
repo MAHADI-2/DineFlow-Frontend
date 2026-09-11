@@ -23,16 +23,22 @@ import ForgotPassword from './page/ForgotPassword';
 import ResetPassword from './page/ResetPassword';
 import NotFound from './page/NotFound';
 import BookTable from './page/BookTable';
+import About from './page/About';
+import Contact from './page/Contact';
+import { Toaster } from 'react-hot-toast';
 function App() {
   return (
      <ContextProvider>
       <AuthProvider>
     <Layout>
+    <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       
     <Routes>
      
       <Route path="/" element={<Home />} />
       <Route path="/menu" element={<Menu />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
