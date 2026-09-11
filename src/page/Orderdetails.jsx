@@ -127,7 +127,20 @@ const Orderdetails = () => {
                 toast.success("🎉 Thank you for your feedback! It helps us serve you better.");
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || "Unable to submit your review. Please try again.");
+            if (err.response?.status === 409 && err.response?.data?.alreadyReviewed) {
+                setOrder((currentOrder) => ({
+                    ...currentOrder,
+                    items: currentOrder.items.map((item) => (
+                        String(getFoodId(item)) === String(foodId)
+                            ? { ...item, isReviewed: true }
+                            : item
+                    ))
+                }));
+                setReviewItem(null);
+                toast.success("This item is already rated.");
+                return;
+            }
+            toast.error(err.response?.data?.message || "Unable to submit review. Please try again.");
         } finally {
             setSubmittingReview(false);
         }
