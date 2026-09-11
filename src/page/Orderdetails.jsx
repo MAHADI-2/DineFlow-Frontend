@@ -96,9 +96,9 @@ const Orderdetails = () => {
         try {
             setSubmittingReview(true);
             
-            // ✅ ব্যাকএন্ড ও মঙ্গোডিবি উভয়ের সাথে ১০০% ম্যাচ করে পেলোড পাঠানো
+            // ✅ ব্যাকএন্ড ও মঙ্গোডিবি উভয়ের সাথে ১০০% ম্যাচ করে পেলোড পাঠানো
             await API.post("/reviews/create", {
-                orderId: order?._id || order?.orderId,
+                orderId: order?.orderId || order?._id,
                 menuItemId: foodId,
                 foodId: foodId,
                 name: foodTitle,
@@ -131,7 +131,7 @@ const Orderdetails = () => {
             toast.success("🎉 Thank you for your feedback! It helps us serve you better.");
         } catch (err) {
             console.warn("Review submission warning:", err);
-            // ✅ ব্যাকএন্ড যদি ডুপ্লিকেট বা ওয়ার্নিংও দেয়, কাস্টমারকে আটকে না রেখে সাকসেসফুলি রিসিভ করা
+            // ✅ ব্যাকএন্ড যদি ডুপ্লিকেট বা ওয়ার্নিংও দেয়, কাস্টমারকে আটকে না রেখে সাকসেসফুলি রিসিভ করা
             setOrder((currentOrder) => ({
                 ...currentOrder,
                 items: currentOrder.items.map((item) => (
@@ -208,7 +208,7 @@ const Orderdetails = () => {
                     </button>
                 </div>
 
-                {/* আসল ইনভয়েস কার্ড */}
+                {/* আসল ইনভয়েস কার্ড */}
                 <div className="printable-invoice bg-white rounded-2xl shadow-xs border border-gray-100 p-6 sm:p-8 print:border-none print:shadow-none print:p-0">
                     
                     {/* হেডার */}
@@ -331,7 +331,7 @@ const Orderdetails = () => {
                                             )}
                                         </div>
 
-                                        {/* ⭐ ডেলিভারি হওয়ার পর প্রতিটি খাবারের জন্য লাইভ রেটিং দেওয়ার বাটন */}
+                                        {/* ⭐ ডেলিভারি হওয়ার পর প্রতিটি খাবারের জন্য লাইভ রেটিং দেওয়ার বাটন */}
                                         {isDelivered && (
                                             <div className="flex items-center gap-2 print:hidden">
                                                 {isSubmitted ? (
@@ -432,7 +432,7 @@ const Orderdetails = () => {
 
                         <div className="mt-6 flex justify-end gap-3">
                             <button type="button" onClick={closeReviewModal} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50" disabled={submittingReview}>Cancel</button>
-                            <button type="submit" className="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60" disabled={submittingReview}>
+                            <button type="submit" className="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60">
                                 {submittingReview ? "Submitting..." : "Submit Review"}
                             </button>
                         </div>
