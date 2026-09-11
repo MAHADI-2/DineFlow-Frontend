@@ -50,7 +50,10 @@ const Orderdetails = () => {
     }, [loading, user, navigate, orderId]);
 
     const handlePrint = () => {
-        window.print();
+        if (typeof window !== "undefined") {
+            window.focus();
+            window.print();
+        }
     };
 
     // আসল ব্যাকএন্ডে রেটিং পাঠানো
@@ -87,6 +90,8 @@ const Orderdetails = () => {
     }
 
     const isDelivered = order.status === "delivered";
+    const invoiceId = order.orderId || order.tran_id || order.transactionId ||
+        (order._id ? `ORD-${order._id.slice(-6).toUpperCase()}` : "ORD-NEW");
     const customerPhone = order.deliveryDetails?.phone ||
         order.deliveryAddress?.phone ||
         order.phone ||
@@ -120,7 +125,7 @@ const Orderdetails = () => {
                 </div>
 
                 {/* আসল ইনভয়েস কার্ড */}
-                <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-6 sm:p-8 print:border-none print:shadow-none print:p-0">
+                <div className="printable-invoice bg-white rounded-2xl shadow-xs border border-gray-100 p-6 sm:p-8 print:border-none print:shadow-none print:p-0">
                     
                     {/* হেডার */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 mb-6 gap-4">
@@ -131,7 +136,7 @@ const Orderdetails = () => {
 
                         <div className="sm:text-right">
                             <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">INVOICE</span>
-                            <span className="text-sm font-bold text-gray-800">{order.orderId || order._id}</span>
+                            <span className="text-sm font-bold text-gray-800">{invoiceId}</span>
                             <span className="text-xs text-gray-400 block mt-0.5">
                                 {new Date(order.createdAt).toLocaleDateString()} at{" "}
                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -145,7 +150,7 @@ const Orderdetails = () => {
                         </div>
                     ) : (
                         <div className="mb-6 overflow-x-auto pb-1">
-                            <div className="flex min-w-[560px] items-start justify-between">
+                            <div className="grid w-full grid-cols-4 items-start">
                                 {orderSteps.map((step, index) => {
                                     const Icon = step.icon;
                                     const isComplete = step.statuses.includes(order.status);

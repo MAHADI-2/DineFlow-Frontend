@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@media print {
+	* {
+		-webkit-print-color-adjust: exact !important;
+		print-color-adjust: exact !important;
+		color-adjust: exact !important;
+	}
+
+	body {
+		background: #ffffff !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	nav, header, footer, .navbar, .footer, button, .no-print {
+		display: none !important;
+	}
+
+	@page {
+		size: auto;
+		margin: 10mm 12mm;
+	}
+
+	.printable-invoice {
+		width: 100% !important;
+		max-width: 100% !important;
+		box-shadow: none !important;
+		border: none !important;
+		padding: 0 !important;
+	}
+
+	svg {
+		display: inline-block !important;
+	}
+}
