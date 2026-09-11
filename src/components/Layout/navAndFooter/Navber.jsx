@@ -119,10 +119,10 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex h-16 items-center justify-between gap-2 lg:gap-4">
           
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="mr-4 flex shrink-0 items-center">
             <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-amber-600">
               <img src="/dineflow-logo.svg" alt="DineFlow Logo" className="h-10 w-10 object-cover rounded-xl shadow-sm" />
               <span>DineFlow</span>
@@ -130,23 +130,23 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-amber-600 font-medium transition">
+          <div className="hidden items-center gap-1 xl:flex">
+            <Link to="/" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
               Home
             </Link>
-            <Link to="/menu" className="text-gray-700 hover:text-amber-600 font-medium transition">
+            <Link to="/menu" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
               Menu
             </Link>
-            <Link to="/about" className="text-gray-700 hover:text-amber-600 font-medium transition">About</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-amber-600 font-medium transition">Contact</Link>
-            <Link to="/book-table" className="flex items-center gap-1.5 text-gray-700 hover:text-amber-600 font-medium transition">
+            <Link to="/about" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">About</Link>
+            <Link to="/contact" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">Contact</Link>
+            <Link to="/book-table" className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
               <CalendarDays className="w-4 h-4 text-orange-500" />
               <span>Book Table</span>
             </Link>
             
             {/* সাধারণ ইউজারদের জন্য My Orders */}
             {user && (
-              <Link to="/orders" className="text-gray-700 hover:text-amber-600 font-medium transition">
+              <Link to="/orders" className="whitespace-nowrap px-2.5 py-1.5 text-sm font-medium text-gray-700 transition hover:text-amber-600">
                 My Orders
               </Link>
             )}
@@ -156,7 +156,7 @@ export default function Navbar() {
               <>
                 <Link 
                   to="/admin/orders" 
-                  className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 font-semibold px-3 py-1.5 rounded-lg border border-amber-200 transition"
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-600" />
                   <span>Admin Orders</span>
@@ -165,7 +165,7 @@ export default function Navbar() {
 
                 <Link 
                   to="/admin/menu" 
-                  className="flex items-center gap-1.5 text-gray-700 hover:text-amber-600 font-medium transition"
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-amber-50 hover:text-amber-600"
                 >
                   <UtensilsCrossed className="w-4 h-4 text-amber-600" />
                   <span>Manage Menu</span>
@@ -175,7 +175,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Side Icons (Cart & Profile) */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {user && (
               <div className="relative">
                 <button type="button" aria-label="Notifications" onClick={() => setNotificationsOpen((open) => !open)} className="relative rounded-xl p-2 text-gray-700 transition hover:bg-amber-50 hover:text-amber-600">
@@ -202,7 +202,7 @@ export default function Navbar() {
             </Link>
 
             {user ? (
-              <div className="flex items-center space-x-3">
+              <div className="hidden items-center space-x-3 xl:flex">
                 <Link 
                   to="/profile" 
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-medium transition"
@@ -217,7 +217,7 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="hidden items-center space-x-2 xl:flex">
                 <Link 
                   to="/login" 
                   className="flex items-center space-x-1 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 font-medium transition"
@@ -237,10 +237,12 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center xl:hidden">
             <button
+              type="button"
+              aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-amber-600 focus:outline-none"
+              className="rounded-xl p-2 text-gray-700 transition hover:bg-amber-50 hover:text-amber-600 focus:outline-none"
             >
               {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
             </button>
@@ -251,7 +253,8 @@ export default function Navbar() {
 
       {/* Mobile Dropdown Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-3">
+        <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-2 shadow-lg xl:hidden">
+          <div className="mx-auto max-w-7xl space-y-3">
           <Link
             to="/"
             onClick={() => setIsOpen(false)}
@@ -311,17 +314,7 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            {user && <button type="button" onClick={() => setNotificationsOpen((open) => !open)} className="relative flex items-center gap-2 py-2 font-medium text-gray-700"><Bell className="h-5 w-5" /> Alerts {unreadCount > 0 && <span className="rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">{unreadCount}</span>}</button>}
-            <Link
-              to="/cart"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center space-x-2 text-gray-700 hover:text-amber-600 py-2 font-medium"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              <span>Cart ({cartCount})</span>
-            </Link>
-
+          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
             {user ? (
               <div className="flex items-center space-x-2">
                 <Link
@@ -361,6 +354,7 @@ export default function Navbar() {
             <div className="flex items-center justify-between border-b border-gray-200 px-1 pb-2"><p className="text-xs font-black text-gray-900">Latest updates</p><button type="button" onClick={markAllRead} className="text-[10px] font-bold text-amber-600">Mark all as read</button></div>
             <div className="max-h-64 space-y-1 overflow-y-auto pt-2">{notifications.length === 0 ? <p className="px-1 py-5 text-center text-xs text-gray-400">You are all caught up.</p> : notifications.map((notification) => <Link key={notification.id} to={notification.path} onClick={() => setIsOpen(false)} className="flex gap-2 rounded-xl p-2 hover:bg-white"><span>{notification.icon}</span><span><span className="block text-xs font-bold text-gray-900">{notification.title}</span><span className="block text-[11px] leading-4 text-gray-600">{notification.message}</span><span className="block text-[10px] text-gray-400">{relativeTime(notification.createdAt)}</span></span></Link>)}</div>
           </div>}
+          </div>
         </div>
       )}
     </nav>
