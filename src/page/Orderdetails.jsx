@@ -100,6 +100,7 @@ const Orderdetails = () => {
             const res = await API.post("/reviews/create", {
                 orderId: order.orderId,
                 menuItemId: foodId,
+                foodName: reviewItem.itemName || reviewItem.name || reviewItem.menuItem?.name,
                 rating: reviewRating,
                 serviceExperience,
                 comment: reviewComment
