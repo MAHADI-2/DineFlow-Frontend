@@ -1,10 +1,12 @@
 import { useState } from "react";
 import API from "../Api";
 import { useAuth } from "../context/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const location = useLocation();
+    const [email, setEmail] = useState(location.state?.email || '');
     const [password, setPassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -26,8 +28,9 @@ const Login = () => {
             const { data } = await API.post("/login", { email, password });
             const {  user, token } = data;
             loginUser(user, token);
-            alert("Login Successfull");
-            navigate("/");
+            const displayName = user?.name || user?.username || email.split("@")[0];
+            toast.success(`✨ Welcome back, ${displayName}! Login Successful.`);
+            navigate(location.state?.from || "/");
         
         }
             

@@ -3,23 +3,11 @@ import API from "../Api";
 import { BACKEND_URL } from "../config";
 import { useCart } from "../context/useCart";
 import { Search, Sparkles, History, X, Star } from "lucide-react";
-
-const normalizeCategory = (category) => {
-  const value = String(category || "").trim();
-  return value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "";
-};
+import { getMenuCategory } from "../utils/menuCategory";
 
 const getImageUrl = (image) => {
   if (!image) return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
   return image.startsWith("/uploads/") ? `${BACKEND_URL}${image}` : image;
-};
-
-const categoryGroups = {
-  Appetizer: ["Appetizer", "Snacks"],
-  Main: ["Main", "Burger", "Pizza", "Rice"],
-  Sides: ["Sides"],
-  Dessert: ["Dessert"],
-  Beverage: ["Beverage", "Drinks"],
 };
 
 const MenuItem = () => {
@@ -47,7 +35,7 @@ const MenuItem = () => {
         if (res.data.status === "success") {
           setMenus((res.data.menus || []).map((menu) => ({
             ...menu,
-            category: normalizeCategory(menu.category),
+            category: getMenuCategory(menu),
           })));
         }
       } catch (error) {
@@ -97,8 +85,8 @@ const MenuItem = () => {
   const cleanSearch = searchQuery.trim().toLowerCase();
 
   const filteredMenus = menus.filter((item) => {
-    const itemCategory = normalizeCategory(item.category);
-    const matchesCategory = selectedCategory === "All" || (categoryGroups[selectedCategory] || [selectedCategory]).includes(itemCategory);
+    const itemCategory = getMenuCategory(item);
+    const matchesCategory = selectedCategory === "All" || selectedCategory.toUpperCase() === itemCategory;
     const itemName = (item.name || "").toLowerCase();
     const itemDesc = (item.description || "").toLowerCase();
     const itemCat = itemCategory.toLowerCase();

@@ -31,7 +31,7 @@ function App() {
      <ContextProvider>
       <AuthProvider>
     <Layout>
-    <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+    <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
       
     <Routes>
      

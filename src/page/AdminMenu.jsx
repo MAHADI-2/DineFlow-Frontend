@@ -4,6 +4,7 @@ import API from "../Api";
 import { BACKEND_URL } from "../config";
 import { useAuth } from "../context/useAuth";
 import { Plus, Edit2, Trash2, X, Image as ImageIcon } from "lucide-react";
+import { CATEGORY_OPTIONS, getMenuCategory, getStoredCategory } from "../utils/menuCategory";
 
 const AdminMenu = () => {
   const [menus, setMenus] = useState([]);
@@ -20,7 +21,7 @@ const AdminMenu = () => {
     name: "",
     description: "",
     price: "",
-    category: "Burger",
+    category: "main",
     image: "",
     preparationTime: 20,
     isAvailable: true,
@@ -71,7 +72,7 @@ const AdminMenu = () => {
       name: "",
       description: "",
       price: "",
-      category: "Burger",
+      category: "main",
       image: "",
       preparationTime: 20,
       isAvailable: true,
@@ -86,7 +87,7 @@ const AdminMenu = () => {
       name: item.name,
       description: item.description || "",
       price: item.price,
-      category: item.category || "Burger",
+      category: getStoredCategory(item.category),
       image: item.image || "",
       preparationTime: item.preparationTime || 20,
       isAvailable: item.isAvailable !== false,
@@ -132,6 +133,7 @@ const AdminMenu = () => {
       setSubmitting(true);
       const menuData = {
         ...formData,
+        category: getStoredCategory(formData.category),
         description,
         image: typeof formData.image === "string" ? formData.image : "",
       };
@@ -231,7 +233,7 @@ const AdminMenu = () => {
                     </div>
                   )}
                   <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-amber-700 font-bold text-xs px-2.5 py-1 rounded-full shadow-sm">
-                    {item.category || "Food"}
+                    {getMenuCategory(item)}
                   </span>
                 </div>
 
@@ -313,12 +315,9 @@ const AdminMenu = () => {
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none bg-white"
                     >
-                      <option value="Burger">Burger</option>
-                      <option value="Pizza">Pizza</option>
-                      <option value="Snacks">Snacks</option>
-                      <option value="Drinks">Drinks</option>
-                      <option value="Dessert">Dessert</option>
-                      <option value="Rice">Rice & Meal</option>
+                      {CATEGORY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
                     </select>
                   </div>
                 </div>

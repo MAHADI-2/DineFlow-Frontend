@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../Api";
+import toast from "react-hot-toast";
 
 const Register = () => {
 
@@ -33,6 +34,7 @@ const Register = () => {
                 }
             );
 
+            toast.success("🎉 Registration Successful! An OTP has been sent to your email.");
             navigate("/verify-otp", {
                 state: {
                     email,
@@ -42,12 +44,19 @@ const Register = () => {
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data?.message ||
-                "Registration failed"
-            );
+            console.error(error);
+            const message = error.response?.data?.message || "Registration failed";
+            if (error.response?.status === 400 && message.toLowerCase().includes("already exists")) {
+                toast.custom((t) => (
+                    <div className={`pointer-events-auto flex max-w-sm items-center gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3 text-sm text-gray-700 shadow-xl transition-all ${t.visible ? "animate-in fade-in slide-in-from-top-2" : "opacity-0"}`}>
+                        <span className="text-lg">⚠️</span>
+                        <span className="flex-1">This email is already registered!</span>
+                        <button type="button" onClick={() => { toast.dismiss(t.id); navigate("/login", { state: { email } }); }} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Login</button>
+                    </div>
+                ), { duration: 2500 });
+            } else {
+                toast.error(message);
+            }
         } finally {
             setSubmitting(false);
         }

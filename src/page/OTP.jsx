@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../Api";
+import toast from "react-hot-toast";
 
 const OTP = () => {
 
@@ -20,7 +21,7 @@ const OTP = () => {
 
         try {
 
-            const { data } = await API.post(
+            await API.post(
                 "/verifyOtp",
                 {
                     email: email,
@@ -28,21 +29,14 @@ const OTP = () => {
                 }
             );
 
-            alert(data.message);
-
-            // OTP successful
-            // এবার Login page
-
-            navigate("/login");
+            toast.success("✅ Email Verified Successfully! Redirecting to login...");
+            navigate("/login", { state: { email } });
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data?.message ||
-                "OTP verification failed"
-            );
+            console.error(error);
+            const message = error.response?.data?.message || "OTP verification failed";
+            toast.error(message.toLowerCase().includes("otp") ? "Invalid OTP code. Please try again." : message);
         } finally {
             setSubmitting(false);
         }
