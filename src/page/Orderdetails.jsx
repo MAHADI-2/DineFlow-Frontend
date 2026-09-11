@@ -12,6 +12,15 @@ const orderSteps = [
     { label: "Delivered", statuses: ["delivered"], icon: Gift },
 ];
 
+const getFoodId = (item) => (
+    item?.menuItem?._id ||
+    item?.menuItem?.id ||
+    (typeof item?.menuItem === "string" ? item.menuItem : null) ||
+    item?._id ||
+    item?.id ||
+    item?.menuItemId
+);
+
 const Orderdetails = () => {
     const { orderId } = useParams();
     const { user, loading } = useAuth();
@@ -80,14 +89,17 @@ const Orderdetails = () => {
 
     const handleReviewSubmit = async (event) => {
         event.preventDefault();
-        const menuItemId = reviewItem?.menuItemId || reviewItem?.id || reviewItem?._id;
-        if (!menuItemId || !reviewItem) return;
+        const foodId = getFoodId(reviewItem);
+        if (!foodId || !reviewItem) {
+            toast.error("This food item could not be identified. Please refresh the order and try again.");
+            return;
+        }
 
         try {
             setSubmittingReview(true);
             const res = await API.post("/reviews/create", {
                 orderId: order.orderId,
-                menuItemId,
+                menuItemId: foodId,
                 rating: reviewRating,
                 serviceExperience,
                 comment: reviewComment
@@ -96,7 +108,7 @@ const Orderdetails = () => {
                 setOrder((currentOrder) => ({
                     ...currentOrder,
                     items: currentOrder.items.map((item) => (
-                        String(item.menuItemId || item.id || item._id) === String(menuItemId)
+                        String(getFoodId(item)) === String(foodId)
                             ? { ...item, isReviewed: true }
                             : item
                     ))
@@ -266,7 +278,7 @@ const Orderdetails = () => {
                         <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Order Items</h3>
                         <div className="space-y-4">
                             {order.items?.map((item) => {
-                                const itemId = item.menuItemId || item.id || item._id;
+                                const itemId = getFoodId(item);
                                 const isSubmitted = item.isReviewed;
 
                                 return (
