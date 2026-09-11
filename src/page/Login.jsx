@@ -11,6 +11,12 @@ const Login = () => {
     const { loginUser } = useAuth();
     const navigate = useNavigate();
 
+    const fillCredentials = (nextEmail, nextPassword) => {
+        setEmail(nextEmail);
+        setPassword(nextPassword);
+        setError("");
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -87,6 +93,23 @@ const Login = () => {
                     </button>
                     {error && <p className="text-sm text-red-600 text-center">{error}</p>}
                 </form>
+
+                <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-900">Quick Test Credentials</h3>
+                        <span className="text-[11px] text-indigo-600">Authorized accounts only</span>
+                    </div>
+                    <div className="mt-3 space-y-2 text-xs">
+                        <div className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
+                            <span className="min-w-0 truncate text-gray-700">👤 Customer: customer@dineflow.com <span className="text-gray-400">(Pass: 123456)</span></span>
+                            <button type="button" onClick={() => fillCredentials("customer@dineflow.com", "123456")} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Fill</button>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
+                            <span className="min-w-0 truncate text-gray-700">👑 Admin: admin@dineflow.com <span className="text-gray-400">(Pass: admin123)</span></span>
+                            <button type="button" onClick={() => fillCredentials("admin@dineflow.com", "admin123")} className="shrink-0 font-bold text-indigo-600 hover:text-indigo-800">Fill</button>
+                        </div>
+                    </div>
+                </div>
                 
             </div>
         </div>

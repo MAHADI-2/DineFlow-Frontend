@@ -11,6 +11,7 @@ const OTP = () => {
     const navigate = useNavigate();
 
     const email = location.state?.email;
+    const fallbackOtp = location.state?.fallbackOtp;
 
     const handleSubmit = async (e) => {
 
@@ -56,6 +57,11 @@ const OTP = () => {
                     <p className="text-sm text-gray-500 mt-2">
                         Please enter the verification code sent to <br />
                         <span className="font-semibold text-indigo-600">{email || "your email"}</span>
+                    </p>
+                    <p className="mt-4 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-left text-xs leading-5 text-amber-800">
+                        {fallbackOtp
+                            ? `Verification code sent to your email! (If email delivery is delayed on free server, use code: ${fallbackOtp} for testing)`
+                            : "Verification code sent to your email!"}
                     </p>
                 </div>
 

@@ -33,11 +33,10 @@ const Register = () => {
                 }
             );
 
-            alert(data.message);
-
             navigate("/verify-otp", {
                 state: {
-                    email: email
+                    email,
+                    fallbackOtp: data.data?.emailDelivery === "fallback" ? data.data.otp : ""
                 }
             });
 
