@@ -160,26 +160,64 @@ const AdminOrders = () => {
         return matchesStatus && matchesSearch;
     });
 
+    const isOrderRevenueEligible = (order) => {
+        const pStatus = String(order.paymentStatus || "").toLowerCase();
+        const oStatus = String(order.status || "").toLowerCase();
+        return pStatus === "paid" || oStatus === "delivered" || oStatus === "confirmed" || oStatus === "preparing" || oStatus === "ready";
+    };
+
     const totalRevenue = orders.reduce((sum, order) => {
-        const isCompleted = order.paymentStatus === "paid" || order.status === "delivered";
+        const pStatus = String(order.paymentStatus || "").toLowerCase();
+        const oStatus = String(order.status || "").toLowerCase();
+        const isCompleted = pStatus === "paid" || oStatus === "delivered";
         return isCompleted ? sum + Number(order.totalAmount || 0) : sum;
     }, 0);
+
     const activeDeliveries = orders.filter((order) => ["pending", "confirmed"].includes(order.status)).length;
     const pendingBookings = bookings.filter((booking) => booking.status === "pending").length;
+
+    // ৭ দিনের নিখুঁত রেভিনিউ হিসাব
     const revenueByDay = Array.from({ length: 7 }, (_, index) => {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() - (6 - index));
-        const key = date.toISOString().slice(0, 10);
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - index));
+        const targetDateStr = d.toLocaleDateString();
+
         const revenue = orders.reduce((sum, order) => {
-            const orderDate = new Date(order.createdAt).toISOString().slice(0, 10);
-            const isCompleted = order.paymentStatus === "paid" || order.status === "delivered";
-            return orderDate === key && isCompleted ? sum + Number(order.totalAmount || 0) : sum;
+            const rawDate = order.createdAt || order.date || order.updatedAt;
+            if (!rawDate) return sum;
+            const orderDateStr = new Date(rawDate).toLocaleDateString();
+            return (orderDateStr === targetDateStr && isOrderRevenueEligible(order))
+                ? sum + Number(order.totalAmount || 0)
+                : sum;
         }, 0);
-        return { key, label: date.toLocaleDateString([], { weekday: "short" }), revenue };
+
+        return {
+            key: `day-${index}`,
+            label: d.toLocaleDateString([], { weekday: "short" }),
+            revenue
+        };
     });
-    const chartMax = Math.max(...revenueByDay.map((day) => day.revenue), 1);
-    const chartPoints = revenueByDay.map((day, index) => `${(index / 6) * 100},${92 - (day.revenue / chartMax) * 72}`).join(" ");
+
+    const totalLast7DaysRevenue = revenueByDay.reduce((sum, day) => sum + day.revenue, 0);
+    const chartMax = Math.max(...revenueByDay.map((day) => day.revenue), 100);
+
+    // পাহাড়ের মতো মসৃণ কার্ভ (Curved Wave Path)
+    const points = revenueByDay.map((day, index) => ({
+        x: (index / 6) * 100,
+        y: Math.max(16, 92 - (day.revenue / chartMax) * 72)
+    }));
+
+    const curvedLinePath = points.reduce((acc, point, i, arr) => {
+        if (i === 0) return `M ${point.x},${point.y}`;
+        const prev = arr[i - 1];
+        const cx1 = prev.x + (point.x - prev.x) / 2;
+        const cy1 = prev.y;
+        const cx2 = prev.x + (point.x - prev.x) / 2;
+        const cy2 = point.y;
+        return `${acc} C ${cx1},${cy1} ${cx2},${cy2} ${point.x},${point.y}`;
+    }, "");
+
+    const curvedAreaPath = `${curvedLinePath} L 100,92 L 0,92 Z`;
 
     const updateBookingStatus = async (bookingId, status) => {
         try {
@@ -243,17 +281,38 @@ const AdminOrders = () => {
                                 <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Revenue overview</p>
                                 <h2 className="mt-1 text-xl font-black text-gray-900">Last 7 days</h2>
                             </div>
-                            <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">৳{revenueByDay.reduce((sum, day) => sum + day.revenue, 0).toLocaleString()}</span>
+                            <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">৳{totalLast7DaysRevenue.toLocaleString()}</span>
                         </div>
                         <div className="mt-4 h-48 w-full">
                             <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-36 w-full overflow-visible" role="img" aria-label="Revenue area chart for the last seven days">
-                                <defs><linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity="0.35" /><stop offset="100%" stopColor="#10b981" stopOpacity="0.02" /></linearGradient></defs>
+                                <defs>
+                                    <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+                                        <stop offset="60%" stopColor="#10b981" stopOpacity="0.12" />
+                                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                                    </linearGradient>
+                                </defs>
                                 <line x1="0" y1="92" x2="100" y2="92" stroke="#e5e7eb" strokeWidth="0.6" />
-                                <polygon points={`0,92 ${chartPoints} 100,92`} fill="url(#revenueFill)" />
-                                <polyline points={chartPoints} fill="none" stroke="#059669" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-                                {revenueByDay.map((day, index) => <circle key={day.key} cx={(index / 6) * 100} cy={92 - (day.revenue / chartMax) * 72} r="1.7" fill="#ffffff" stroke="#059669" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
+                                <path d={curvedAreaPath} fill="url(#revenueFill)" />
+                                <path d={curvedLinePath} fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                {points.map((p, index) => (
+                                    <circle
+                                        key={revenueByDay[index].key}
+                                        cx={p.x}
+                                        cy={p.y}
+                                        r="2"
+                                        fill="#ffffff"
+                                        stroke="#059669"
+                                        strokeWidth="1.2"
+                                        vectorEffect="non-scaling-stroke"
+                                    />
+                                ))}
                             </svg>
-                            <div className="flex justify-between text-[11px] font-semibold text-gray-400">{revenueByDay.map((day) => <span key={day.key}>{day.label}</span>)}</div>
+                            <div className="flex justify-between text-[11px] font-semibold text-gray-400 mt-2">
+                                {revenueByDay.map((day) => (
+                                    <span key={day.key}>{day.label}</span>
+                                ))}
+                            </div>
                         </div>
                     </section>
 
